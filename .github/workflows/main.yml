@@ -28,11 +28,12 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v3
 
-    - id: set-matrix
+    - name: Calculate test matrix
+      id: set-matrix
       run: |
         branchName=$(echo '${{ github.ref }}' | sed 's,refs/heads/,,g')  
         matrix=$(jq --arg branchName "$branchName" 'map(. | select((.runOn==$branchName) or (.runOn=="always")) )' .github/workflows/matrix_includes.json)                
-        echo "matrix={\"include\":$(echo $matrix)}\" >> "$GITHUB_OUTPUT"
+        echo "matrix={\"include\":$(echo $matrix)}\" >> $GITHUB_OUTPUT
 
   scenario-tests:
 
