@@ -31,4 +31,4 @@ class UtilHelpers:
         Take a directory and a list of releative paths, and make sure to return
         a list of merged paths.
         """
-        return [os.path.join(directory_to_scan, i) for i in relative_paths]
+        return [os.path.join(directory_to_scan, i.replace("/", os.path.sep)) for i in relative_paths]

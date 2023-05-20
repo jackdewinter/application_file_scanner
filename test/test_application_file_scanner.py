@@ -290,7 +290,7 @@ def test_application_file_scanner_current_directory_two_directories() -> None:
             "README.md",
             "changelog.md",
             "install-requirements.txt",
-            "publish\\README.md",
+            "publish/README.md",
         ],
     )
 
@@ -483,11 +483,11 @@ def test_application_file_scanner_current_directory_recursive() -> None:
             "CONTRIBUTING.md",
             "README.md",
             "changelog.md",
-            "docs\\developer.md",
-            "docs\\examples.md",
-            "docs\\faq.md",
-            "publish\\README.md",
-            "stubs\\README.md",
+            "docs/developer.md",
+            "docs/examples.md",
+            "docs/faq.md",
+            "publish/README.md",
+            "stubs/README.md",
         ],
     )
 
@@ -517,11 +517,11 @@ def test_application_file_scanner_current_directory_recursive_command_line() -> 
             "CONTRIBUTING.md",
             "README.md",
             "changelog.md",
-            "docs\\developer.md",
-            "docs\\examples.md",
-            "docs\\faq.md",
-            "publish\\README.md",
-            "stubs\\README.md",
+            "docs/developer.md",
+            "docs/examples.md",
+            "docs/faq.md",
+            "publish/README.md",
+            "stubs/README.md",
         ],
     )
 
