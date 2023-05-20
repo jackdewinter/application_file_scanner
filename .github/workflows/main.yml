@@ -32,7 +32,7 @@ jobs:
       run: |
         branchName=$(echo '${{ github.ref }}' | sed 's,refs/heads/,,g')  
         matrix=$(jq --arg branchName "$branchName" 'map(. | select((.runOn==$branchName) or (.runOn=="always")) )' .github/workflows/matrix_includes.json)                
-        echo ::set-output name=matrix::{\"include\":$(echo $matrix)}\"
+        echo "matrix={\"include\":$(echo $matrix)}\" >> "$GITHUB_OUTPUT"
 
   scenario-tests:
 
