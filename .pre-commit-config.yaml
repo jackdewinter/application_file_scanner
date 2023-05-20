@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/jackdewinter/pymarkdown
+    rev: v0.9.9
+    hooks:
+      - id: pymarkdown
+        pass_filenames: false
+        args:
+          - --config
+          - clean.json
+          - scan
+          - .
+          - ./docs

@@ -1,0 +1,2 @@
+include install-requirements.txt
+include application_file_scanner/py.typed
