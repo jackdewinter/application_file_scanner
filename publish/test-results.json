@@ -1,0 +1,23 @@
+{
+    "projectName": "?",
+    "reportSource": "pytest",
+    "measurements": [
+        {
+            "name": "test.test_application_file_scanner",
+            "totalTests": 20,
+            "failedTests": 0,
+            "errorTests": 0,
+            "skippedTests": 0,
+            "elapsedTimeInMilliseconds": 0
+        },
+        {
+            "name": "test.test_version",
+            "totalTests": 1,
+            "failedTests": 0,
+            "errorTests": 0,
+            "skippedTests": 0,
+            "elapsedTimeInMilliseconds": 0
+        }
+    ]
+}
+

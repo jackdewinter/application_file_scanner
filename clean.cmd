@@ -104,17 +104,17 @@ if "%SOURCERY_USER_KEY%" == "" (
 		set "SOURCERY_LIMIT=--diff ^"git diff^""
 	)
 
-	pipenv run sourcery review --fix  --verbose %PYTHON_MODULE_NAME% !SOURCERY_LIMIT!
+	pipenv run sourcery review --fix --verbose . !SOURCERY_LIMIT!
 	if ERRORLEVEL 1 (
 		echo.
-		echo {Executing Sourcery on %PYTHON_MODULE_NAME% mode failed.}
+		echo {Executing Sourcery fix on project code failed.}
 		goto error_end
 	)
 
-	pipenv run sourcery review --fix --verbose test !SOURCERY_LIMIT!
+	pipenv run sourcery review --check --verbose . !SOURCERY_LIMIT!
 	if ERRORLEVEL 1 (
 		echo.
-		echo {Executing Sourcery on test code failed.}
+		echo {Executing Sourcery check on project code after fix failed. Failures remain.}
 		goto error_end
 	)
 )
@@ -154,6 +154,13 @@ pipenv run mypy --strict %PYTHON_MODULE_NAME% !STUBS_DIRECTORY!
 if ERRORLEVEL 1 (
 	echo.
 	echo {Executing mypy static analyzer on Python source code failed.}
+	goto error_end
+)
+
+pipenv run mypy --strict test !STUBS_DIRECTORY!
+if ERRORLEVEL 1 (
+	echo.
+	echo {Executing mypy static analyzer on Python test code failed.}
 	goto error_end
 )
 
