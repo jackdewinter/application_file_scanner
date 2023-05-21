@@ -53,12 +53,30 @@ echo {Analysis of project started.}
 
 rem Cleanly start the main part of the script
 
-echo {Syncing python packages with PipEnv 'pipfile'.}
-pipenv sync
-if ERRORLEVEL 1 (
+rem Check to see if the Pipfile is newer than the Pipfile.lock file.
+python utils\find_outdated_piplock_file.py
+if ERRORLEVEL 2 (
 	echo.
-	echo {Syncing python packages with PipEnv failed.}
+	echo Analysis of project cannot proceed without a Pipfile.
 	goto error_end
+)
+if ERRORLEVEL 1 (
+	echo {'Pipfile' and 'Pipfile.lock' are not in sync with each other.}
+	echo {Syncing python packages with new PipEnv 'Pipfile'.}
+	erase Pipfile.lock
+	pipenv lock
+	if ERRORLEVEL 1 (
+		echo.
+		echo {Creating new Pipfile.lock file failed.}
+		goto error_end
+	)
+
+	pipenv sync
+	if ERRORLEVEL 1 (
+		echo.
+		echo {Syncing python packages with PipEnv failed.}
+		goto error_end
+	)
 )
 
 echo {Executing black formatter on Python code.}
@@ -202,6 +220,17 @@ if "%ALL_FILES%" == "" (
 	if ERRORLEVEL 1 (
 		echo.
 		echo {Executing reporting of unused pylint suppressions in modified Python source code failed.}
+		goto error_end
+	)
+)
+
+if defined MY_PUBLISH (
+	echo {Building package for current repository.}
+	call package.cmd > %CLEAN_TEMPFILE%
+	if ERRORLEVEL 1 (
+		cat %CLEAN_TEMPFILE%
+		echo.
+		echo {Building package for repository failed.}
 		goto error_end
 	)
 )
