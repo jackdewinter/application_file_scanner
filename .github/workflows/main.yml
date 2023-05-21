@@ -23,6 +23,7 @@ jobs:
     defaults:
       run:
         shell: bash
+
     steps:
 
     - name: Check out code
@@ -31,8 +32,8 @@ jobs:
     - name: Calculate test matrix
       id: set-matrix
       run: |
-        branchName=$(echo '${{ github.ref }}' | sed 's,refs/heads/,,g')  
-        matrix=$(jq --arg branchName "$branchName" 'map(. | select((.runOn==$branchName) or (.runOn=="always")) )' .github/workflows/matrix_includes.json)                
+        branchName=$(echo '${{ github.ref }}' | sed 's,refs/heads/,,g')
+        matrix=$(jq --arg branchName "$branchName" 'map(. | select((.runOn==$branchName) or (.runOn=="always")) )' .github/workflows/matrix_includes.json)
         echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
 
   scenario-tests:
@@ -73,9 +74,7 @@ jobs:
       - name: Archive coverage artifacts
         uses: actions/upload-artifact@v3
         with:
-        
           name: ${{ matrix.platform }} Coverage
-
           path: |
             ./report/coverage.xml
             ./report/coverage
