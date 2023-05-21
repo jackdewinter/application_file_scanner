@@ -85,9 +85,7 @@ jobs:
         if: github.event_name != 'schedule'
         with:
           file: ./report/coverage.xml
-        
           name: ${{ matrix.python }} - ${{ matrix.platform }}
-
           fail_ci_if_error: true
 
   lint:
