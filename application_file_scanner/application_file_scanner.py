@@ -7,9 +7,23 @@ import glob
 import logging
 import os
 import sys
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Set
 
 LOGGER = logging.getLogger(__name__)
+
+
+# pylint: disable=unnecessary-pass
+
+
+class ScanError(BaseException):
+    """
+    Error to throw if there is a critical error scanning for files.
+    """
+
+    pass
+
+
+# pylint: enable=unnecessary-pass
 
 
 class ApplicationFileScanner:
@@ -20,7 +34,7 @@ class ApplicationFileScanner:
     @staticmethod
     def determine_files_to_scan_with_args(
         args: argparse.Namespace,
-    ) -> Tuple[List[str], bool]:
+    ) -> List[str]:
         """
         Determine the files to scan based on the arguments provided by the `add_default_command_line_arguments` function.
         """
@@ -37,7 +51,7 @@ class ApplicationFileScanner:
         recurse_directories: bool,
         eligible_extensions: str,
         only_list_files: bool,
-    ) -> Tuple[List[str], bool]:
+    ) -> List[str]:
         """
         Determine the files to scan, and how to scan for those files.
         """
@@ -47,24 +61,20 @@ class ApplicationFileScanner:
             )
             split_eligible_extensions: List[str] = eligible_extensions.split(",")
         except argparse.ArgumentTypeError as this_exception:
-            print(
-                f"XX '{eligible_extensions}': {this_exception}",
-                file=sys.stderr,
-            )  # TODO replace with reporter
-            return [], True
+            LOGGER.warning("Extensions to scan for are not valid.")
+            raise ScanError("Extensions to scan for are not valid.") from this_exception
 
-        did_error_scanning_files = False
         files_to_parse: Set[str] = set()
         for next_path in eligible_paths:
             if "*" in next_path or "?" in next_path:
                 globbed_paths = glob.glob(next_path)
                 if not globbed_paths:
-                    print(
-                        f"Provided glob path '{next_path}' did not match any files.",
-                        file=sys.stderr,
-                    )  # TODO replace with reporter
-                    did_error_scanning_files = True
-                    break
+                    LOGGER.warning(
+                        "Provided glob path '%s' did not match any files.", next_path
+                    )
+                    raise ScanError(
+                        f"Provided glob path '{next_path}' did not match any files."
+                    )
                 for next_globbed_path in globbed_paths:
                     ApplicationFileScanner.__process_next_path(
                         next_globbed_path,
@@ -72,21 +82,20 @@ class ApplicationFileScanner:
                         recurse_directories,
                         split_eligible_extensions,
                     )
-            elif not ApplicationFileScanner.__process_next_path(
-                next_path,
-                files_to_parse,
-                recurse_directories,
-                split_eligible_extensions,
-            ):
-                did_error_scanning_files = True
-                break
+            else:
+                ApplicationFileScanner.__process_next_path(
+                    next_path,
+                    files_to_parse,
+                    recurse_directories,
+                    split_eligible_extensions,
+                )
 
         sorted_files_to_parse = sorted(files_to_parse)
         LOGGER.info("Number of files found: %d", len(sorted_files_to_parse))
         ApplicationFileScanner.__handle_main_list_files(
             only_list_files, sorted_files_to_parse
         )
-        return sorted_files_to_parse, did_error_scanning_files
+        return sorted_files_to_parse
 
     @staticmethod
     def __process_next_path(
@@ -94,20 +103,16 @@ class ApplicationFileScanner:
         files_to_parse: Set[str],
         recurse_directories: bool,
         eligible_extensions: List[str],
-    ) -> bool:
-        did_find_any = False
+    ) -> None:
         LOGGER.info("Determining files to scan for path '%s'.", next_path)
         if not os.path.exists(next_path):
-            print(
-                f"Provided path '{next_path}' does not exist.",
-                file=sys.stderr,
-            )
-            LOGGER.debug("Provided path '%s' does not exist.", next_path)
-        elif os.path.isdir(next_path):
+            LOGGER.warning("Provided path '%s' does not exist.", next_path)
+            raise ScanError(f"Provided path '{next_path}' does not exist.")
+
+        if os.path.isdir(next_path):
             ApplicationFileScanner.__process_next_path_directory(
                 next_path, files_to_parse, recurse_directories, eligible_extensions
             )
-            did_find_any = True
         elif ApplicationFileScanner.__is_file_eligible_to_scan(
             next_path, eligible_extensions
         ):
@@ -119,17 +124,9 @@ class ApplicationFileScanner:
                 next_path.replace(os.altsep, os.sep) if os.altsep else next_path
             )
             files_to_parse.add(normalized_path)
-            did_find_any = True
         else:
-            LOGGER.debug(
-                "Provided path '%s' is not a valid file. Skipping.",
-                next_path,
-            )
-            print(
-                f"Provided file path '{next_path}' is not a valid file. Skipping.",
-                file=sys.stderr,
-            )
-        return did_find_any
+            LOGGER.warning("Provided path '%s' does not exist.", next_path)
+            raise ScanError(f"Provided path '{next_path}' is not a valid file.")
 
     @staticmethod
     def __process_next_path_directory(
