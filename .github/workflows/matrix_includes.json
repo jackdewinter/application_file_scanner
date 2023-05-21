@@ -27,13 +27,13 @@
         "python":"3.9",
         "platform":"ubuntu-latest",
         "timeout":5,
-        "runOn":"always"
+        "runOn":"main"
     },
     {
         "python":"3.10",
         "platform":"ubuntu-latest",
         "timeout":5,
-        "runOn":"always"
+        "runOn":"main"
     },
     {
         "python":"3.8",
