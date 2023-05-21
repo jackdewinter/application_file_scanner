@@ -13,6 +13,14 @@ from application_file_scanner.application_file_scanner import (
 )
 
 
+def __handle_version_10_help_changes(expected_output: str) -> str:
+    if UtilHelpers.get_python_version().startswith("3.10."):
+        expected_output = expected_output.replace(
+            "\noptional arguments:\n", "\noptions:\n"
+        )
+    return expected_output
+
+
 def test_application_file_scanner_args_no_changes() -> None:
     """
     Test to make sure we get all scanner args without any flags changed.
@@ -33,6 +41,7 @@ optional arguments:
   -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
                         provide an alternate set of file extensions to scan
                         for"""
+    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -85,6 +94,7 @@ optional arguments:
   -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
                         provide an alternate set of file extensions to scan
                         for"""
+    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -117,6 +127,7 @@ optional arguments:
   -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
                         provide an alternate set of file extensions to scan
                         for"""
+    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -148,6 +159,7 @@ optional arguments:
   -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
                         provide an alternate set of file extensions to scan
                         for"""
+    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -179,6 +191,7 @@ optional arguments:
   -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
                         provide an alternate set of file extensions to scan
                         for"""
+    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -208,6 +221,7 @@ optional arguments:
   -h, --help        show this help message and exit
   -l, --list-files  list the eligible files and exit
   -r, --recurse     recursively scan directories for files"""
+    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -590,9 +604,10 @@ def test_application_file_scanner_list_files() -> None:
     assert not std_error.getvalue()
 
 
-def test_application_file_scanner_list_files__xx() -> None:
+def test_application_file_scanner_list_files_none_found() -> None:
     """
-    Test to make sure we can output any files to stdout.
+    Test to make sure we can output any found files to stdout, with a warning
+    if none are found.
     """
 
     # Arrange

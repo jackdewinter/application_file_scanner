@@ -3,6 +3,7 @@ Module to hold utility functions for tests.
 """
 import difflib
 import os
+import sys
 from typing import List
 
 
@@ -31,4 +32,17 @@ class UtilHelpers:
         Take a directory and a list of releative paths, and make sure to return
         a list of merged paths.
         """
-        return [os.path.join(directory_to_scan, i.replace("/", os.path.sep)) for i in relative_paths]
+        return [
+            os.path.join(directory_to_scan, i.replace("/", os.path.sep))
+            for i in relative_paths
+        ]
+
+    @staticmethod
+    def get_python_version() -> str:
+        """
+        Get a cleaned up python version.
+        """
+        current_python_version = sys.version
+        index = current_python_version.index("(")
+        current_python_version = current_python_version[:index].strip()
+        return current_python_version
