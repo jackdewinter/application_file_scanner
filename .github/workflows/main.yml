@@ -63,7 +63,7 @@ jobs:
 
       - name: Sync With Repository
         run: |
-          pipenv lock
+          pipenv lock --python ${{ matrix.python }}
           pipenv sync
           pipenv graph
 
