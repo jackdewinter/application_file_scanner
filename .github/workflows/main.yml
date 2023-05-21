@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.matrix-prep.outputs.matrix)}}
     runs-on: ${{ matrix.platform }}
-    timeout-minutes: 5
+    timeout-minutes: ${{ matrix.timeout }}
     defaults:
       run:
         shell: bash
