@@ -61,6 +61,24 @@ if ERRORLEVEL 1 (
 	echo Git is either not installed or not referenced in the PATH variable.
 	goto error_end
 )
+if ERRORLEVEL 1 (
+	echo {'Pipfile' and 'Pipfile.lock' are not in sync with each other.}
+	echo {Syncing python packages with new PipEnv 'Pipfile'.}
+	erase Pipfile.lock
+	pipenv lock
+	if ERRORLEVEL 1 (
+		echo.
+		echo {Creating new Pipfile.lock file failed.}
+		goto error_end
+	)
+
+	pipenv sync
+	if ERRORLEVEL 1 (
+		echo.
+		echo {Syncing python packages with PipEnv failed.}
+		goto error_end
+	)
+)
 
 git rev-parse --is-inside-work-tree > nul 2>&1
 if ERRORLEVEL 1 (
