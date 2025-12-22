@@ -1,6 +1,7 @@
 """
 Module to hold utility functions for tests.
 """
+
 import difflib
 import os
 import sys

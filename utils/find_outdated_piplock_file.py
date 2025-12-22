@@ -1,6 +1,9 @@
 """
 Module to quickly determine if a Pipfile.lock file is older than its parent Pipfile.
+
+Used in clean.cmd.
 """
+
 import os
 import sys
 

@@ -2,4 +2,6 @@
 Library version information.
 """
 
-__version__: str = "0.5.0"
+__version__ = "0.5.0"
+__project_name__ = "application_file_scanner"
+__description__ = "A small package to deal with the headaches of scanning for files for an application to execute on."
