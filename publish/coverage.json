@@ -1,13 +1,13 @@
 {
     "projectName": "application_file_scanner",
-    "reportSource": "pytest",
+    "reportSource": "Unknown",
     "branchLevel": {
-        "totalMeasured": 48,
-        "totalCovered": 48
+        "totalMeasured": 44,
+        "totalCovered": 44
     },
     "lineLevel": {
-        "totalMeasured": 103,
-        "totalCovered": 103
+        "totalMeasured": 105,
+        "totalCovered": 105
     }
 }
 

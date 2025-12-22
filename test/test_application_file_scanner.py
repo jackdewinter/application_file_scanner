@@ -1,24 +1,43 @@
 """
 Module to provide tests for the application file scanner module.
 """
+
 import argparse
 import io
 import os
 import sys
 from test.util_helpers import UtilHelpers
+from typing import List
 
 from application_file_scanner.application_file_scanner import (
     ApplicationFileScanner,
     ScanError,
 )
 
+if sys.version_info < (3, 10):
+    ARGPARSE_X = "optional arguments:"
+else:
+    ARGPARSE_X = "options:"
+if sys.version_info < (3, 13):
+    ALT_EXTENSIONS_X = (
+        "-ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS"
+    )
+    EXCLUSIONS_X = "-e PATH_EXCLUSIONS, --exclude PATH_EXCLUSIONS"
+else:
+    ALT_EXTENSIONS_X = "-ae, --alternate-extensions ALTERNATE_EXTENSIONS"
+    EXCLUSIONS_X = "-e, --exclude PATH_EXCLUSIONS"
 
-def __handle_version_10_help_changes(expected_output: str) -> str:
-    if UtilHelpers.get_python_version().startswith("3.10."):
-        expected_output = expected_output.replace(
-            "\noptional arguments:\n", "\noptions:\n"
-        )
-    return expected_output
+
+def __remove_any_venv_files(
+    files_to_parse: List[str], base_directory: str
+) -> List[str]:
+
+    preface_path = os.path.join(base_directory, ".venv")
+    return [
+        next_file
+        for next_file in files_to_parse
+        if not next_file.startswith(preface_path) and ".pytest_cache" not in next_file
+    ]
 
 
 def test_application_file_scanner_args_no_changes() -> None:
@@ -27,21 +46,20 @@ def test_application_file_scanner_args_no_changes() -> None:
     """
 
     # Arrange
-    expected_output = """usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
+    expected_output = f"""usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
 
 Lint any found files.
 
 positional arguments:
   path                  one or more paths to scan for eligible files
 
-optional arguments:
+{ARGPARSE_X}
   -h, --help            show this help message and exit
   -l, --list-files      list the eligible files and exit
   -r, --recurse         recursively scan directories for files
-  -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
+  {ALT_EXTENSIONS_X}
                         provide an alternate set of file extensions to scan
                         for"""
-    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -80,21 +98,20 @@ def test_application_file_scanner_args_with_file_type_name() -> None:
     """
 
     # Arrange
-    expected_output = """usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
+    expected_output = f"""usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
 
 Lint any found files.
 
 positional arguments:
   path                  one or more paths to scan for eligible MINE files
 
-optional arguments:
+{ARGPARSE_X}
   -h, --help            show this help message and exit
   -l, --list-files      list the eligible MINE files and exit
   -r, --recurse         recursively scan directories for files
-  -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
+  {ALT_EXTENSIONS_X}
                         provide an alternate set of file extensions to scan
                         for"""
-    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -113,21 +130,20 @@ def test_application_file_scanner_args_with_empty_file_type_name() -> None:
     """
 
     # Arrange
-    expected_output = """usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
+    expected_output = f"""usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
 
 Lint any found files.
 
 positional arguments:
   path                  one or more paths to scan for eligible files
 
-optional arguments:
+{ARGPARSE_X}
   -h, --help            show this help message and exit
   -l, --list-files      list the eligible files and exit
   -r, --recurse         recursively scan directories for files
-  -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
+  {ALT_EXTENSIONS_X}
                         provide an alternate set of file extensions to scan
                         for"""
-    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -146,20 +162,19 @@ def test_application_file_scanner_args_without_list_files() -> None:
     """
 
     # Arrange
-    expected_output = """usage: pytest [-h] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
+    expected_output = f"""usage: pytest [-h] [-r] [-ae ALTERNATE_EXTENSIONS] path [path ...]
 
 Lint any found files.
 
 positional arguments:
   path                  one or more paths to scan for eligible files
 
-optional arguments:
+{ARGPARSE_X}
   -h, --help            show this help message and exit
   -r, --recurse         recursively scan directories for files
-  -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
+  {ALT_EXTENSIONS_X}
                         provide an alternate set of file extensions to scan
                         for"""
-    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -178,20 +193,19 @@ def test_application_file_scanner_args_without_recurse_directories() -> None:
     """
 
     # Arrange
-    expected_output = """usage: pytest [-h] [-l] [-ae ALTERNATE_EXTENSIONS] path [path ...]
+    expected_output = f"""usage: pytest [-h] [-l] [-ae ALTERNATE_EXTENSIONS] path [path ...]
 
 Lint any found files.
 
 positional arguments:
   path                  one or more paths to scan for eligible files
 
-optional arguments:
+{ARGPARSE_X}
   -h, --help            show this help message and exit
   -l, --list-files      list the eligible files and exit
-  -ae ALTERNATE_EXTENSIONS, --alternate-extensions ALTERNATE_EXTENSIONS
+  {ALT_EXTENSIONS_X}
                         provide an alternate set of file extensions to scan
                         for"""
-    expected_output = __handle_version_10_help_changes(expected_output)
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -210,18 +224,18 @@ def test_application_file_scanner_args_without_alternate_extensions() -> None:
     """
 
     # Arrange
-    expected_output = """usage: pytest [-h] [-l] [-r] path [path ...]
+    expected_output = f"""usage: pytest [-h] [-l] [-r] path [path ...]
 
 Lint any found files.
 
 positional arguments:
   path              one or more paths to scan for eligible files
 
-optional arguments:
+{ARGPARSE_X}
   -h, --help        show this help message and exit
   -l, --list-files  list the eligible files and exit
-  -r, --recurse     recursively scan directories for files"""
-    expected_output = __handle_version_10_help_changes(expected_output)
+  -r, --recurse     recursively scan directories for files
+"""
     parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
 
     # Act
@@ -500,6 +514,13 @@ def test_application_file_scanner_current_directory_recursive() -> None:
             "docs/developer.md",
             "docs/examples.md",
             "docs/faq.md",
+            "newdocs/src/changelog.md",
+            "newdocs/src/contribute.md",
+            "newdocs/src/faq.md",
+            "newdocs/src/getting-started.md",
+            "newdocs/src/index.md",
+            "newdocs/src/user-guide.md",
+            "newdocs/src/usual.md",
             "publish/README.md",
             "stubs/README.md",
         ],
@@ -508,6 +529,9 @@ def test_application_file_scanner_current_directory_recursive() -> None:
     # Act
     sorted_files_to_parse = ApplicationFileScanner.determine_files_to_scan(
         [base_directory], True, extensions_to_scan, False
+    )
+    sorted_files_to_parse = __remove_any_venv_files(
+        sorted_files_to_parse, base_directory
     )
 
     # Assert
@@ -534,6 +558,13 @@ def test_application_file_scanner_current_directory_recursive_command_line() -> 
             "docs/developer.md",
             "docs/examples.md",
             "docs/faq.md",
+            "newdocs/src/changelog.md",
+            "newdocs/src/contribute.md",
+            "newdocs/src/faq.md",
+            "newdocs/src/getting-started.md",
+            "newdocs/src/index.md",
+            "newdocs/src/user-guide.md",
+            "newdocs/src/usual.md",
             "publish/README.md",
             "stubs/README.md",
         ],
@@ -547,6 +578,9 @@ def test_application_file_scanner_current_directory_recursive_command_line() -> 
     parse_arguments = parser.parse_args(args=direct_args)
     sorted_files_to_parse = ApplicationFileScanner.determine_files_to_scan_with_args(
         parse_arguments
+    )
+    sorted_files_to_parse = __remove_any_venv_files(
+        sorted_files_to_parse, base_directory
     )
 
     # Assert

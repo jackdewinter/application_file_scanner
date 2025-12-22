@@ -1,2 +1,3 @@
 include install-requirements.txt
 include application_file_scanner/py.typed
+include application_file_scanner/.external-package
