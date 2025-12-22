@@ -6,15 +6,13 @@ import argparse
 import io
 import os
 import sys
-from typing import List
-from test.patches.patch_glob_glob import patch_glob_glob
 from test.util_helpers import UtilHelpers
+from typing import List
 
 from application_file_scanner.application_file_scanner import (
     ApplicationFileScanner,
     ScanError,
 )
-
 
 if sys.version_info < (3, 10):
     ARGPARSE_X = "optional arguments:"
@@ -29,7 +27,10 @@ else:
     ALT_EXTENSIONS_X = "-ae, --alternate-extensions ALTERNATE_EXTENSIONS"
     EXCLUSIONS_X = "-e, --exclude PATH_EXCLUSIONS"
 
-def __remove_any_venv_files(files_to_parse:List[str], base_directory:str) -> List[str]:
+
+def __remove_any_venv_files(
+    files_to_parse: List[str], base_directory: str
+) -> List[str]:
 
     preface_path = os.path.join(base_directory, ".venv")
     return [
@@ -37,6 +38,7 @@ def __remove_any_venv_files(files_to_parse:List[str], base_directory:str) -> Lis
         for next_file in files_to_parse
         if not next_file.startswith(preface_path) and ".pytest_cache" not in next_file
     ]
+
 
 def test_application_file_scanner_args_no_changes() -> None:
     """
@@ -528,7 +530,9 @@ def test_application_file_scanner_current_directory_recursive() -> None:
     sorted_files_to_parse = ApplicationFileScanner.determine_files_to_scan(
         [base_directory], True, extensions_to_scan, False
     )
-    sorted_files_to_parse = __remove_any_venv_files(sorted_files_to_parse, base_directory)
+    sorted_files_to_parse = __remove_any_venv_files(
+        sorted_files_to_parse, base_directory
+    )
 
     # Assert
     UtilHelpers.compare_expected_to_actual(
@@ -575,7 +579,9 @@ def test_application_file_scanner_current_directory_recursive_command_line() -> 
     sorted_files_to_parse = ApplicationFileScanner.determine_files_to_scan_with_args(
         parse_arguments
     )
-    sorted_files_to_parse = __remove_any_venv_files(sorted_files_to_parse, base_directory)
+    sorted_files_to_parse = __remove_any_venv_files(
+        sorted_files_to_parse, base_directory
+    )
 
     # Assert
     UtilHelpers.compare_expected_to_actual(
