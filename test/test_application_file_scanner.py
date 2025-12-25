@@ -714,6 +714,9 @@ def test_application_file_scanner_current_directory_two_extensions() -> None:
             only_list_files,
         )
     )
+    sorted_files_to_parse = __remove_any_venv_files(
+        sorted_files_to_parse, base_directory
+    )
 
     # Assert
     assert not any_errors
@@ -757,6 +760,9 @@ def test_application_file_scanner_current_directory_two_directories() -> None:
             extensions_to_scan,
             only_list_files,
         )
+    )
+    sorted_files_to_parse = __remove_any_venv_files(
+        sorted_files_to_parse, base_directory
     )
 
     # Assert
