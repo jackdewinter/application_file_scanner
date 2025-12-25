@@ -2,13 +2,13 @@
     "disables-by-file": {
         "application_file_scanner/__init__.py": {},
         "application_file_scanner/application_file_scanner.py": {
-            "unnecessary-pass": 1,
-            "too-many-arguments": 1
+            "too-few-public-methods": 1,
+            "too-many-arguments": 3
         },
         "application_file_scanner/version.py": {}
     },
     "disables-by-name": {
-        "unnecessary-pass": 1,
-        "too-many-arguments": 1
+        "too-few-public-methods": 1,
+        "too-many-arguments": 3
     }
 }
