@@ -14,6 +14,10 @@ class GitProcessor:
     Class to provide a facade for dealing with Git.
     """
 
+    # On Windows, os.path.altsep is defined, on max and linux, it is None.  This resolves that
+    # for this module to simplify things.
+    __normalized_alternate_separator = os.path.altsep or os.path.sep
+
     @staticmethod
     def __run_git_command(
         directory_to_use: str, *args: str
@@ -66,7 +70,7 @@ class GitProcessor:
         ) = GitProcessor.__run_git_command(".", "rev-parse", "--show-toplevel")
         if project_base_directory:
             project_base_directory = project_base_directory.replace(
-                os.path.altsep or os.path.sep, os.path.sep
+                GitProcessor.__normalized_alternate_separator, os.path.sep
             )
         return project_base_directory
 
@@ -88,7 +92,7 @@ class GitProcessor:
         files_to_ignore: List[str] = []
         if standard_out:
             files_to_ignore.extend(
-                i.replace(os.path.altsep or os.path.sep, os.path.sep)
+                i.replace(GitProcessor.__normalized_alternate_separator, os.path.sep)
                 for i in standard_out.splitlines(False)
             )
         return files_to_ignore
@@ -106,9 +110,11 @@ class GitProcessor:
         if not base_path:
             return None
 
-        xbase_path = base_path.replace(os.path.sep, os.path.altsep) + os.path.altsep
+        xbase_path = base_path.replace(
+            os.path.sep, (GitProcessor.__normalized_alternate_separator)
+        ) + (GitProcessor.__normalized_alternate_separator)
         modified_paths = [
-            i.replace(os.path.sep, os.path.altsep or os.path.sep)
+            i.replace(os.path.sep, GitProcessor.__normalized_alternate_separator)
             for i in paths_to_check
         ]
         drive_pattern = re.compile(r"^[A-Za-z]:(/)?")
