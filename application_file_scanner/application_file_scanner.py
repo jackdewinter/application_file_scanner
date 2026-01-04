@@ -837,7 +837,11 @@ class ApplicationFileScanner:
             return files_to_parse
 
         # Ensure that the exclude paths are posix compliant (mainly for Windows), and construct the gitignore string.
-        modified_exclude_paths = [i.replace(os.sep, os.altsep) for i in exclude_paths]
+        modified_exclude_paths = (
+            [i.replace(os.sep, os.altsep) for i in exclude_paths]
+            if os.altsep is not None
+            else exclude_paths[:]
+        )
         modified_exclude_paths_as_gitignore_string = "\n".join(modified_exclude_paths)
 
         # Create the matcher and use it to determine what files should remain in the new list.

@@ -66,7 +66,7 @@ class GitProcessor:
         ) = GitProcessor.__run_git_command(".", "rev-parse", "--show-toplevel")
         if project_base_directory:
             project_base_directory = project_base_directory.replace(
-                os.path.altsep, os.path.sep
+                os.path.altsep or os.path.sep, os.path.sep
             )
         return project_base_directory
 
@@ -88,7 +88,7 @@ class GitProcessor:
         files_to_ignore: List[str] = []
         if standard_out:
             files_to_ignore.extend(
-                i.replace(os.path.altsep, os.path.sep)
+                i.replace(os.path.altsep or os.path.sep, os.path.sep)
                 for i in standard_out.splitlines(False)
             )
         return files_to_ignore
@@ -108,26 +108,15 @@ class GitProcessor:
 
         xbase_path = base_path.replace(os.path.sep, os.path.altsep) + os.path.altsep
         modified_paths = [
-            i.replace(os.path.sep, os.path.altsep) for i in paths_to_check
+            i.replace(os.path.sep, os.path.altsep or os.path.sep)
+            for i in paths_to_check
         ]
         drive_pattern = re.compile(r"^[A-Za-z]:(/)?")
         special_paths_to_check: List[str] = []
         normal_paths_to_check: List[str] = []
         for i in modified_paths:
-            starts_with_separator = i.startswith(os.altsep)
-            starts_with_parent_directory_then_separator = i.startswith(f"..{os.altsep}")
-            includes_separator_parent_directory_separator = (
-                f"{os.altsep}..{os.altsep}" in i
-            )
-            is_windows_path_start = platform.system().lower() == "windows" and bool(
-                drive_pattern.match(i)
-            )
-            is_starts_with_base_path = i.lower().startswith(xbase_path.lower())
-            if (
-                starts_with_separator
-                or starts_with_parent_directory_then_separator
-                or includes_separator_parent_directory_separator
-                or (is_windows_path_start and not is_starts_with_base_path)
+            if GitProcessor.__get_check_ignores_is_special_path(
+                i, drive_pattern, xbase_path
             ):
                 special_paths_to_check.append(i)
             else:
@@ -144,3 +133,25 @@ class GitProcessor:
         return files_to_ignore
 
     # pylint: enable=too-many-locals
+
+    @staticmethod
+    def __get_check_ignores_is_special_path(
+        i: str, drive_pattern: re.Pattern[str], xbase_path: str
+    ) -> bool:
+        starts_with_separator = i.startswith(os.altsep or os.sep)
+        starts_with_parent_directory_then_separator = i.startswith(
+            f"..{os.altsep or os.sep}"
+        )
+        includes_separator_parent_directory_separator = (
+            f"{os.altsep or os.sep}..{os.altsep or os.sep}" in i
+        )
+        is_windows_path_start = platform.system().lower() == "windows" and bool(
+            drive_pattern.match(i)
+        )
+        is_starts_with_base_path = i.lower().startswith(xbase_path.lower())
+        return (
+            starts_with_separator
+            or starts_with_parent_directory_then_separator
+            or includes_separator_parent_directory_separator
+            or (is_windows_path_start and not is_starts_with_base_path)
+        )
