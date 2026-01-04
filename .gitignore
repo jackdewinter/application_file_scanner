@@ -139,3 +139,7 @@ build/
 project_summarizer.egg-info/*
 dist/
 report.xml
+
+# For tests of application_file_scanner
+*.abc
+.git/

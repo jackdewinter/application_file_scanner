@@ -24,7 +24,7 @@ The `application_file_scanner` library has the following advnatages:
 
 ## Requirements
 
-This project required Python 3.8 or later to function.
+This project required Python 3.10 or later to function.
 
 ## Installation
 

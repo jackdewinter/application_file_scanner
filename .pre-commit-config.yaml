@@ -96,9 +96,9 @@ repos:
     hooks:
     - id: mypy
       name: "Scan:   MyPy"
-      args: [--warn-return-any, --strict, application_file_scanner  ]
+      args: [--warn-return-any, --strict, application_file_scanner, stubs  ]
       additional_dependencies: [
-        
+        gitignore_parser
       ]
       pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -106,9 +106,9 @@ repos:
     hooks:
     - id: mypy
       name: "Scan:   MyPy (test)"
-      args: [--warn-return-any, --exclude, test/resources, --strict, test  ]
+      args: [--warn-return-any, --exclude, test/resources, --strict, test, stubs  ]
       additional_dependencies: [
-        
+        gitignore_parser, pytest
       ]
       pass_filenames: false
   - repo: https://github.com/jackdewinter/pymarkdown
