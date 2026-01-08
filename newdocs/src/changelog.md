@@ -28,6 +28,8 @@
 
 - [Type of pathing returned by calls can be different.](https://github.com/jackdewinter/application_file_scanner/issues/37)
     - Globbed vs unglobbed pathing returned either full or partial pathing.  Unified.
+- [Doc: Fix badges on home page.](https://github.com/jackdewinter/application_file_scanner/issues/41)
+    - Badges on home page not reflecting actual composition, due to pathing change at shields.io.
 
 ## Version 0.6.0 - Date: 2025-12-25
 
