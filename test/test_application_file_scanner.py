@@ -3064,8 +3064,11 @@ def test_application_file_scanner_git_directory_overload() -> None:
     print(x)
     # 131,072
     really_long_list_of_files: List[str] = []
-    for _i in range(0, 10):
+    y = 0
+    while y < 131072:
         really_long_list_of_files.extend(sorted_files_to_parse)
+        y += x
+    print(y)
 
     # Act
     caught_exception = None
