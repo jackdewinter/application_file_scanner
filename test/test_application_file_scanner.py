@@ -1621,6 +1621,7 @@ def test_application_file_scanner_current_directory_recursive_command_line_4() -
             "test/test_version.py",
             "test/util_helpers.py",
             "test/utils.py",
+            "utils/extract_python_version_from_pipfile.py",
             "utils/find_outdated_piplock_file.py",
             "utils/generate_dependencies_file.py",
             "utils/verify_install_requirements.py",
@@ -1879,6 +1880,7 @@ def test_application_file_scanner_current_directory_recursive_exclude_fixed_dire
     )
 
 
+@pytest.mark.timeout(30)
 def test_application_file_scanner_current_directory_recursive_exclude_fixed_directory_with_trailing_alternate_separator() -> (
     None
 ):
@@ -1892,9 +1894,10 @@ def test_application_file_scanner_current_directory_recursive_exclude_fixed_dire
 
     # Arrange
     base_directory = os.getcwd()
+    separator = os.altsep if os.altsep is not None else os.sep
 
     paths_to_include = ["*"]
-    paths_to_exclude = [f"newdocs{os.altsep}*", ".venv/"]
+    paths_to_exclude = [f"newdocs{separator}", ".venv/"]
     recurse_directories = True
     extensions_to_scan = ".md"
     only_list_files = False
@@ -3019,6 +3022,7 @@ def test_application_file_scanner_exclude_temporary_directories_both_with_statis
 
 
 # pylint: disable=broad-exception-caught
+@pytest.mark.timeout(30)
 def test_application_file_scanner_git_directory_overload() -> None:
     """
     Test to make sure we can get predictable exception behavior on large lists passed to the command
@@ -3053,11 +3057,14 @@ def test_application_file_scanner_git_directory_overload() -> None:
         scanner_options=scanner_options,
     )
     assert len(sorted_files_to_parse) > 100
+    really_long_list_of_files: List[str] = []
+    for _i in range(0, 10):
+        really_long_list_of_files.extend(sorted_files_to_parse)
 
     # Act
     caught_exception = None
     try:
-        GitProcessor.get_check_ignores(sorted_files_to_parse)
+        GitProcessor.get_check_ignores(really_long_list_of_files)
     except BaseException as this_exception:  # noqa B036
         caught_exception = this_exception
 
