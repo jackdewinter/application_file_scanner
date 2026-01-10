@@ -6,6 +6,7 @@ import argparse
 import io
 import os
 import sys
+import tempfile
 from dataclasses import dataclass
 from test.patches.patch_subprocess_run import (
     PatchSubprocessCompletedProcess,
@@ -13,7 +14,11 @@ from test.patches.patch_subprocess_run import (
     path_subprocess_run,
 )
 from test.util_helpers import UtilHelpers
-from test.utils import create_temporary_configuration_file, read_contents_of_text_file
+from test.utils import (
+    create_temporary_configuration_file,
+    read_contents_of_text_file,
+    write_temporary_configuration,
+)
 from typing import List, Optional
 
 import pytest
@@ -3022,64 +3027,40 @@ def test_application_file_scanner_exclude_temporary_directories_both_with_statis
 
 
 # pylint: disable=broad-exception-caught
-@pytest.mark.timeout(30)
+@pytest.mark.timeout(20)
 def test_application_file_scanner_git_directory_overload() -> None:
     """
     Test to make sure we can get predictable exception behavior on large lists passed to the command
     line for ignoring git files.
 
-    NOTE: Doing a recursive parse of the .git directory of the project is in the realm of
-          a worst case scenario with over 6000 files returned.  This will exceed the Windows
-          API limit of 32,767 characters and 131,072 characters in most linux systems. Assuming
-          the linux limit and at least 6000 files, that leaves just 21 characters per path
-          before the limit is breached.
+    NOTE: After a couple of tries to come up with a good test, the creation of a temporary directory
+          within the /test/resources directory was chosen.  This still allows the 32,767(Windows)/131,072(Other)
+          limits to be tested within the confines of the project.
     """
 
     # Arrange
-    base_directory = os.path.join(os.getcwd(), ".git")
+    base_directory = os.path.join(os.getcwd(), "test", "resources")
 
-    paths_to_include = [base_directory]
-    paths_to_exclude: List[str] = []
-    recurse_directories = True
-    extensions_to_scan = ""
-    only_list_files = False
-    scanner_options = ApplicationFileScannerOptions(
-        enable_directory_gitignore_exclusions=False,
-        enable_path_gitignore_exclusions=False,
-    )
+    with tempfile.TemporaryDirectory(dir=base_directory) as tmp_dir_path:
 
-    sorted_files_to_parse, _, _ = ApplicationFileScanner.determine_files_to_scan(
-        paths_to_include,
-        paths_to_exclude,
-        recurse_directories,
-        extensions_to_scan,
-        only_list_files,
-        scanner_options=scanner_options,
-    )
-    assert len(sorted_files_to_parse) > 100
+        index = 0
+        size_estimate = 0
+        long_list_of_files: List[str] = []
+        while size_estimate < 132000:
+            file_name = write_temporary_configuration(
+                "", file_name=f"test_{index}.txt", directory=tmp_dir_path
+            )
+            file_name = os.path.abspath(file_name)
+            long_list_of_files.append(file_name)
+            size_estimate += len(file_name)
+            index += 1
 
-    single_instance_size_estimate = 0
-    for i in sorted_files_to_parse:
-        single_instance_size_estimate += len(i)
-    print(
-        f"{single_instance_size_estimate} characters per {len(sorted_files_to_parse)} files."
-    )
-
-    really_long_list_of_files: List[str] = []
-    total_size_estimate = 0
-    while total_size_estimate < 131072:
-        really_long_list_of_files.extend(sorted_files_to_parse)
-        total_size_estimate += single_instance_size_estimate
-    print(
-        f"Total of {len(really_long_list_of_files)} files to test with an estimated {total_size_estimate} characters."
-    )
-
-    # Act
-    caught_exception = None
-    try:
-        GitProcessor.get_check_ignores(really_long_list_of_files)
-    except BaseException as this_exception:  # noqa B036
-        caught_exception = this_exception
+        # Act
+        caught_exception = None
+        try:
+            GitProcessor.get_check_ignores(long_list_of_files)
+        except BaseException as this_exception:  # noqa B036
+            caught_exception = this_exception
 
     # Assert
     assert (sys.platform == "win32" and caught_exception) or (
