@@ -3061,14 +3061,18 @@ def test_application_file_scanner_git_directory_overload() -> None:
     single_instance_size_estimate = 0
     for i in sorted_files_to_parse:
         single_instance_size_estimate += len(i)
-    print(f"{single_instance_size_estimate} characters per {len(sorted_files_to_parse)} files.")
+    print(
+        f"{single_instance_size_estimate} characters per {len(sorted_files_to_parse)} files."
+    )
 
     really_long_list_of_files: List[str] = []
     total_size_estimate = 0
     while total_size_estimate < 131072:
         really_long_list_of_files.extend(sorted_files_to_parse)
         total_size_estimate += single_instance_size_estimate
-    print(f"Total of {len(really_long_list_of_files)} files to test with an estimated {total_size_estimate} characters.")
+    print(
+        f"Total of {len(really_long_list_of_files)} files to test with an estimated {total_size_estimate} characters."
+    )
 
     # Act
     caught_exception = None
