@@ -3022,7 +3022,6 @@ def test_application_file_scanner_exclude_temporary_directories_both_with_statis
 
 
 # pylint: disable=broad-exception-caught
-@pytest.mark.skipif(sys.platform != "win32", reason="Test runs only on Windows")
 def test_application_file_scanner_git_directory_overload() -> None:
     """
     Test to make sure we can get predictable exception behavior on large lists passed to the command
@@ -3082,7 +3081,9 @@ def test_application_file_scanner_git_directory_overload() -> None:
         caught_exception = this_exception
 
     # Assert
-    assert caught_exception
+    assert (sys.platform == "win32" and caught_exception) or (
+        sys.platform != "win32" and not caught_exception
+    )
 
 
 # pylint: enable=broad-exception-caught
