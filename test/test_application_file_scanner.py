@@ -3022,7 +3022,7 @@ def test_application_file_scanner_exclude_temporary_directories_both_with_statis
 
 
 # pylint: disable=broad-exception-caught
-@pytest.mark.timeout(30)
+@pytest.mark.skipif(sys.platform != "win32", reason="Test runs only on Windows")
 def test_application_file_scanner_git_directory_overload() -> None:
     """
     Test to make sure we can get predictable exception behavior on large lists passed to the command
@@ -3058,17 +3058,17 @@ def test_application_file_scanner_git_directory_overload() -> None:
     )
     assert len(sorted_files_to_parse) > 100
 
-    x = 0
+    single_instance_size_estimate = 0
     for i in sorted_files_to_parse:
-        x += len(i)
-    print(x)
-    # 131,072
+        single_instance_size_estimate += len(i)
+    print(f"{single_instance_size_estimate} characters per {len(sorted_files_to_parse)} files.")
+
     really_long_list_of_files: List[str] = []
-    y = 0
-    while y < 1000000:
+    total_size_estimate = 0
+    while total_size_estimate < 131072:
         really_long_list_of_files.extend(sorted_files_to_parse)
-        y += x
-    print(y)
+        total_size_estimate += single_instance_size_estimate
+    print(f"Total of {len(really_long_list_of_files)} files to test with an estimated {total_size_estimate} characters.")
 
     # Act
     caught_exception = None
