@@ -3057,6 +3057,12 @@ def test_application_file_scanner_git_directory_overload() -> None:
         scanner_options=scanner_options,
     )
     assert len(sorted_files_to_parse) > 100
+
+    x = 0
+    for i in sorted_files_to_parse:
+        x += len(i)
+    print(x)
+    # 131,072
     really_long_list_of_files: List[str] = []
     for _i in range(0, 10):
         really_long_list_of_files.extend(sorted_files_to_parse)
