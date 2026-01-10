@@ -322,6 +322,27 @@ class ApplicationFileScanner:
 
     # pylint: enable=too-many-arguments
 
+
+    @staticmethod
+    def __glob_including_hidden(glob_pattern:str, recursive:bool=False) -> List[str]:
+        """
+        A backward-compatible glob implementation that does not rely on the 3.11 or
+        later include_hidden flag.
+        
+        :param glob_pattern: Pattern to pass to `glob.glob`.
+        :param recursive: Whether the `**` pattern should match directories recursively.
+        :return: List of all matching file paths.
+        """
+
+        hidden_pattern = os.path.join(
+            os.path.dirname(glob_pattern) or '.',
+            f'.{os.path.basename(glob_pattern)}',
+        )
+        matches = glob.glob(glob_pattern, recursive=recursive)
+        matches.extend(glob.glob(hidden_pattern, recursive=recursive))
+
+        return sorted({os.path.normpath(m) for m in matches})
+
     # pylint: disable=too-many-arguments
     @staticmethod
     def __process_next_eligible_path(
@@ -338,7 +359,7 @@ class ApplicationFileScanner:
 
             logging.debug("processing globbed path: %s", next_path)
             ApplicationFileScanner.__scanner_statistics.globbed_path_count += 1
-            globbed_paths = glob.glob(next_path, recursive=True, include_hidden=True)
+            globbed_paths = ApplicationFileScanner.__glob_including_hidden(next_path, recursive=True)
 
             if scanner_options.enable_directory_manual_exclusions:
                 globbed_paths = (
