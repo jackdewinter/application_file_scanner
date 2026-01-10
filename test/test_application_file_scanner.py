@@ -3065,7 +3065,7 @@ def test_application_file_scanner_git_directory_overload() -> None:
     # 131,072
     really_long_list_of_files: List[str] = []
     y = 0
-    while y < 256000:
+    while y < 1000000:
         really_long_list_of_files.extend(sorted_files_to_parse)
         y += x
     print(y)
