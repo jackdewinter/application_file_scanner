@@ -3022,6 +3022,7 @@ def test_application_file_scanner_exclude_temporary_directories_both_with_statis
 
 
 # pylint: disable=broad-exception-caught
+@pytest.mark.timeout(30)
 def test_application_file_scanner_git_directory_overload() -> None:
     """
     Test to make sure we can get predictable exception behavior on large lists passed to the command
