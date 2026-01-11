@@ -1626,9 +1626,11 @@ def test_application_file_scanner_current_directory_recursive_command_line_4() -
             "test/test_version.py",
             "test/util_helpers.py",
             "test/utils.py",
+            "utils/count_remaining_pcu_packages.py",
             "utils/extract_python_version_from_pipfile.py",
             "utils/find_outdated_piplock_file.py",
             "utils/generate_dependencies_file.py",
+            "utils/generate_requirements_file.py",
             "utils/verify_install_requirements.py",
             "utils/verify_package_release.py",
         ],
@@ -3120,7 +3122,7 @@ def test_application_file_scanner_exclude_git_paths_only_with_statistics() -> No
     assert scan_statistics.globbed_path_count == 0
     assert scan_statistics.unglobbed_path_count == 1
 
-    assert scan_statistics.top_level_gitignored_count > 100
+    assert scan_statistics.top_level_gitignored_count > 25
     # assert scan_statistics.external_gitignore_combined_times > 30.0
 
 

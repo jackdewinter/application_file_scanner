@@ -1,5 +1,4 @@
-"""Module to generate a combined dependencies file from pre-commit and Pipfile.
-"""
+"""Module to generate a combined dependencies file from pre-commit and Pipfile."""
 
 import json
 import os
