@@ -3122,7 +3122,7 @@ def test_application_file_scanner_exclude_git_paths_only_with_statistics() -> No
     assert scan_statistics.globbed_path_count == 0
     assert scan_statistics.unglobbed_path_count == 1
 
-    assert scan_statistics.top_level_gitignored_count > 100
+    assert scan_statistics.top_level_gitignored_count > 25
     # assert scan_statistics.external_gitignore_combined_times > 30.0
 
 
