@@ -56,22 +56,32 @@ def __handle_arguments():
     return parser.parse_args()
 
 
-def __load_package_exclude_list_from_properties_file() -> List[str]:
+def __load_package_exclude_list_from_properties_file(use_dev_list: bool) -> List[str]:
 
     with open("project.properties", "r", encoding="utf-8") as file:
         text = file.read()
     config = configparser.RawConfigParser()
     config.read_string(f"[main]\n{text}")
-    ss = config.get("main", "PACKAGE_UPDATE_EXCLUDE_LIST", fallback="").split(",")
+    ss = config.get(
+        "main",
+        (
+            "PACKAGE_UPDATE_DEV_EXCLUDE_LIST"
+            if use_dev_list
+            else "PACKAGE_UPDATE_EXCLUDE_LIST"
+        ),
+        fallback="",
+    ).split(",")
     return [i.strip() for i in ss]
 
 
 if __name__ == "__main__":
     error_messages: List[str] = []
 
-    tt = __load_package_exclude_list_from_properties_file()
-
     parsed_args = __handle_arguments()
+
+    tt = __load_package_exclude_list_from_properties_file(
+        parsed_args.export_dev_packages
+    )
 
     pipefile_map, package_name_list, dev_package_name_list = (
         __load_pipfile_packages_and_versions(error_messages)
@@ -83,3 +93,4 @@ if __name__ == "__main__":
         if package_name in tt:
             continue
         print(f"{package_name}=={pipefile_map[package_name]}")
+    print("", flush=True)

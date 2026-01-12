@@ -8,7 +8,7 @@ set -uo pipefail
 SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 TEMP_FILE=$(mktemp /tmp/"${SCRIPT_NAME}".XXXXXXXXX)
-TEMP_FILE2=$(mktemp /tmp/"${SCRIPT_NAME}".XXXXXXXXX.txt)
+TEMP_FILE2=$(mktemp ./"${SCRIPT_NAME}".XXXXXXXXX.txt)
 
 SCRIPT_TITLE="Analyzing project dependencies"
 
@@ -143,6 +143,61 @@ start_process
 export PYTHONIOENCODING=utf-8
 # set PYTHONIOENCODING=utf-8
 
+check_for_updates() {
+	local PACKAGE_TYPE=${1}
+	local DEV_FLAG=${2:-}
+
+	verbose_echo "  Checking ${PACKAGE_TYPE} packages section of Pipfile..."
+	verbose_echo "    Exporting ${PACKAGE_TYPE} packages section into requirements file."
+	# shellcheck disable=SC2086  # Double quote to prevent splitting and globbing.
+	if ! pipenv run python utils/generate_requirements_file.py ${DEV_FLAG} >"${TEMP_FILE2}"; then
+		complete_process 1 "Error occurred generating ${PACKAGE_TYPE} requirements file."
+	fi
+
+	verbose_echo "    Checking ${PACKAGE_TYPE} packages requirements file."
+	if ! pipenv run pcu "${TEMP_FILE2}" >"${TEMP_FILE}" 2>&1; then
+		cat "${TEMP_FILE}"
+		complete_process 1 "Error occurred checking Pipfile packages updates."
+	fi
+
+	# shellcheck disable=SC2086  # Double quote to prevent splitting and globbing.
+	if ! PIPFILE_PACKAGES_NEEDING_UPDATING=$(pipenv run python utils/count_remaining_pcu_packages.py ${DEV_FLAG} "${TEMP_FILE}"); then
+		complete_process 1 "Error occurred checking filtered Pipfile packages."
+	fi
+	if [[ "${PIPFILE_PACKAGES_NEEDING_UPDATING}" != "0" ]]; then
+		echo "      ${PIPFILE_PACKAGES_NEEDING_UPDATING} Pipfile packages are eligible for updating."
+		# shellcheck disable=SC2086  # Double quote to prevent splitting and globbing.
+		pipenv run python utils/count_remaining_pcu_packages.py ${DEV_FLAG} "${TEMP_FILE}" --list
+		NEED_UPDATE=1
+	fi
+}
+
+perform_updates() {
+	local PACKAGE_TYPE=${1}
+	local DEV_FLAG=${2:-}
+	local IMPORT_FLAGS=${3:-}
+
+	verbose_echo "  Updating ${PACKAGE_TYPE} packages section of Pipfile..."
+	verbose_echo "    Exporting ${PACKAGE_TYPE} packages section into requirements file."
+	# shellcheck disable=SC2086  # Double quote to prevent splitting and globbing.
+	if ! pipenv run python utils/generate_requirements_file.py ${DEV_FLAG} >"${TEMP_FILE2}"; then
+		complete_process 1 "Error occurred generating ${PACKAGE_TYPE} requirements file."
+	fi
+
+	verbose_echo "    Upgrading ${PACKAGE_TYPE} packages requirements file."
+	if ! pipenv run pcu --upgrade "${TEMP_FILE2}" >"${TEMP_FILE}" 2>&1; then
+		cat "${TEMP_FILE}"
+		complete_process 1 "Error occurred updating Pipfile packages."
+	fi
+
+	verbose_echo "    Importing upgraded requirements file back into ${PACKAGE_TYPE} packages section."
+	# shellcheck disable=SC2086  # Double quote to prevent splitting and globbing.
+	if ! pipenv install -r "${TEMP_FILE2}" ${IMPORT_FLAGS} >"${TEMP_FILE}" 2>&1; then
+		cat "${TEMP_FILE}"
+		complete_process 1 "Error occurred installing updated ${PACKAGE_TYPE} packages into pipenv."
+	fi
+}
+
 if [[ ${CHECK_MODE} -eq 1 ]]; then
 
 	verbose_echo "Checking for Pre-Commit package updates..."
@@ -153,18 +208,9 @@ if [[ ${CHECK_MODE} -eq 1 ]]; then
 	fi
 
 	verbose_echo "Checking for Pipfile package updates..."
-	if ! pipenv run pcu Pipfile >"${TEMP_FILE}" 2>&1; then
-		cat "${TEMP_FILE}"
-		complete_process 1 "Error occurred checking Pipfile packages updates."
-	fi
-	if ! PIPFILE_PACKAGES_NEEDING_UPDATING=$(pipenv run python utils/count_remaining_pcu_packages.py "${TEMP_FILE}"); then
-		complete_process 1 "Error occurred checking filtered Pipfile packages."
-	fi
-	if [[ "${PIPFILE_PACKAGES_NEEDING_UPDATING}" != "0" ]]; then
-		echo "${PIPFILE_PACKAGES_NEEDING_UPDATING} Pipfile packages are eligible for updating."
-		pipenv run python utils/count_remaining_pcu_packages.py "${TEMP_FILE}" --list
-		NEED_UPDATE=1
-	fi
+
+	check_for_updates "standard" ""
+	check_for_updates "development" "--dev"
 
 	verbose_echo ""
 	if [[ ${NEED_UPDATE} -eq 0 ]]; then
@@ -181,37 +227,8 @@ else
 
 	verbose_echo "Performing any required Pipfile package updates..."
 
-	verbose_echo "  Updating standard packages section of Pipfile..."
-	verbose_echo "    Exporting standard packages section into requirements file."
-	if ! pipenv run python utils/generate_requirements_file.py --dev >"${TEMP_FILE2}"; then
-		complete_process 1 "Error occurred generating standard requirements file."
-	fi
-	verbose_echo "    Upgrading standard packages requirements file."
-	if ! pipenv run pcu --upgrade "${TEMP_FILE2}" >"${TEMP_FILE}" 2>&1; then
-		cat "${TEMP_FILE}"
-		complete_process 1 "Error occurred updating Pipfile packages."
-	fi
-	verbose_echo "    Importing upgraded requirements file back into standard packages section."
-	if ! pipenv install -r "${TEMP_FILE2}" --categories=dev-packages >"${TEMP_FILE}" 2>&1; then
-		cat "${TEMP_FILE}"
-		complete_process 1 "Error occurred installing updated standard packages into pipenv."
-	fi
-
-	verbose_echo "  Updating dev-packages section of Pipfile..."
-	verbose_echo "    Exporting dev-packages section into requirements file."
-	if ! pipenv run python utils/generate_requirements_file.py --dev >"${TEMP_FILE2}"; then
-		complete_process 1 "Error occurred generating development requirements file."
-	fi
-	verbose_echo "    Upgrading dev-packages requirements file."
-	if ! pipenv run pcu --upgrade "${TEMP_FILE2}" >"${TEMP_FILE}" 2>&1; then
-		cat "${TEMP_FILE}"
-		complete_process 1 "Error occurred updating Pipfile packages."
-	fi
-	verbose_echo "    Importing upgraded requirements file back into dev-packages section."
-	if ! pipenv install -r "${TEMP_FILE2}" --categories=dev-packages >"${TEMP_FILE}" 2>&1; then
-		cat "${TEMP_FILE}"
-		complete_process 1 "Error occurred installing updated development packages into pipenv."
-	fi
+	perform_updates "standard" "" ""
+	perform_updates "development" "--dev" "--categories=dev-packages"
 fi
 
 # Normal exit from the script.
