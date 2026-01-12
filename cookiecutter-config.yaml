@@ -1,8 +1,8 @@
 default_context:
     project_name: "application_file_scanner"
-    project_version: "0.5.0"
-    # project_src_additional_path: "" # , stubs
-    # project_src_dependencies: "tomli, types-PyYAML, pytest, pyjson5"
+    project_version: "0.6.2"
+    project_src_additional_path: ", stubs"
+    project_src_dependencies: "gitignore_parser, pytest"
     pypi_package_name: "application_file_scanner"
     github_organization: "jackdewinter"
     github_project_name: "application_file_scanner"
@@ -16,5 +16,5 @@ default_context:
     rtd_site_name : "Application File Scanner"
     rtd_deploy_name : "application_file_scanner"
     # mkdocs_introduction : "file-types.md, command-line.md"
-    # pipfile_additional_packages: "tomli = \">=2.0.1\",pyyaml = \">=5.4.1\",pyjson5  = \">=1.6.9\""
-    # install_requirements_additional_packages: "tomli>=2.0.1,pyyaml>=5.4.1,pyjson5>=1.6.9"
+    pipfile_additional_packages: "gitignore-parser = \">=0.1.13\""
+    install_requirements_additional_packages: "gitignore-parser>=0.1.13"
