@@ -5,6 +5,23 @@
 <!-- pyml disable-next-line no-duplicate-heading-->
 ### Added
 
+- None
+
+<!-- pyml disable-next-line no-duplicate-heading-->
+### Changed
+
+- None
+
+<!-- pyml disable-next-line no-duplicate-heading-->
+### Fixed
+
+- None
+
+## Version 0.6.3 - Date: 2026-01-19
+
+<!-- pyml disable-next-line no-duplicate-heading-->
+### Added
+
 - [Import latest code from PyMarkdown project into this project](https://github.com/jackdewinter/application_file_scanner/issues/32)
     - Pulling in latest changes to properly start this repo.
 - [Change exclude patterns to use gitignore style exclusions.](https://github.com/jackdewinter/application_file_scanner/issues/33)
