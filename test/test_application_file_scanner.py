@@ -2378,9 +2378,7 @@ def test_application_file_scanner_list_files_ignored() -> None:
     test_file_name = "test.abc"
     direct_args = ["--list-files", base_directory, "--respect-gitignore"]
 
-    expected_files_to_ignore = [
-        os.path.abspath(os.path.join(base_directory, test_file_name)),
-    ]
+    expected_files_to_ignore: List[str] = []
 
     __verify_gitignore_file_contains_a_line_with("*.abc")
 
@@ -2414,8 +2412,8 @@ def test_application_file_scanner_list_files_ignored() -> None:
     # Assert
     assert sorted_files_to_parse == expected_files_to_ignore
     assert not any_errors
-    assert std_output.getvalue() == "\n".join(expected_files_to_ignore) + "\n"
-    assert std_error.getvalue() == ""
+    assert std_output.getvalue() == ""
+    assert std_error.getvalue() == "No matching files found.\n"
 
 
 def test_application_file_scanner_git_is_installed() -> None:

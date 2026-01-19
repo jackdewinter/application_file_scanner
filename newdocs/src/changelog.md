@@ -17,6 +17,11 @@
 
 - None
 
+## Version 0.6.4 - Date: 2026-01-19
+
+NOTE: This is a quick release to fix an issue with the new classes not being
+properly exported.
+
 ## Version 0.6.3 - Date: 2026-01-19
 
 <!-- pyml disable-next-line no-duplicate-heading-->

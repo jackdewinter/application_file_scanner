@@ -142,7 +142,9 @@ class ApplicationFileScanner:
         extension_to_use = alternate_extensions or default_extensions_to_look_for
 
         # The command line argument being set to a non-default overrides the scanner options.
-        if getattr(args, "respect_gitignore", False) and scanner_options:
+        if scanner_options is None:
+            scanner_options = ApplicationFileScannerOptions()
+        if getattr(args, "respect_gitignore", False):
             scanner_options.enable_directory_gitignore_exclusions = True
             scanner_options.enable_path_gitignore_exclusions = True
 
