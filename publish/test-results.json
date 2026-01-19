@@ -4,7 +4,7 @@
     "measurements": [
         {
             "name": "test.test_application_file_scanner",
-            "totalTests": 87,
+            "totalTests": 95,
             "failedTests": 0,
             "errorTests": 0,
             "skippedTests": 0,

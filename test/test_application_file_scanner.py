@@ -3823,56 +3823,63 @@ def test_application_file_scanner_scan_with_non_root_gitignored_directory_with_c
     assert not any_errors
     assert sorted_files_to_parse == expected_files
 
+
 def test_application_file_scanner_is_valid_comma_separated_extension_list_empty() -> (
     None
 ):
-    """Test to verify that we can cleanly check for an empty comma-separated string.
-    """
+    """Test to verify that we can cleanly check for an empty comma-separated string."""
 
     # Arrange
     comma_separated_list = ""
 
     # Act
-    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list(comma_separated_list)
+    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list(
+        comma_separated_list
+    )
 
     # Assert
     assert result_string == comma_separated_list
 
+
 def test_application_file_scanner_is_valid_comma_separated_extension_list_single() -> (
     None
 ):
-    """Test to verify that we can cleanly check for single element in a comma-separated string.
-    """
+    """Test to verify that we can cleanly check for single element in a comma-separated string."""
 
     # Arrange
     comma_separated_list = ".md"
 
     # Act
-    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list(comma_separated_list)
+    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list(
+        comma_separated_list
+    )
 
     # Assert
     assert result_string == comma_separated_list
 
+
 def test_application_file_scanner_is_valid_comma_separated_extension_list_double() -> (
     None
 ):
-    """Test to verify that we can cleanly check for double elements in a comma-separated string.
-    """
+    """Test to verify that we can cleanly check for double elements in a comma-separated string."""
 
     # Arrange
     comma_separated_list = ".md,.mj"
 
     # Act
-    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list(comma_separated_list)
+    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list(
+        comma_separated_list
+    )
 
     # Assert
     assert result_string == comma_separated_list
 
+
+# pylint: disable=broad-exception-caught
 def test_application_file_scanner_is_valid_comma_separated_extension_list_with_bad_extension() -> (
     None
 ):
-    """Test to verify that we can cleanly check for double elements in a comma-separated string.
-    """
+    """Test to verify that we can cleanly check for double elements in a comma-separated string."""
 
     # Arrange
     comma_separated_list = ".md,*.mj"
@@ -3880,8 +3887,10 @@ def test_application_file_scanner_is_valid_comma_separated_extension_list_with_b
     # Act
     caught_exception = None
     try:
-        _ = ApplicationFileScanner.is_valid_comma_separated_extension_list(comma_separated_list)
-    except BaseException as this_exception:
+        _ = ApplicationFileScanner.is_valid_comma_separated_extension_list(
+            comma_separated_list
+        )
+    except BaseException as this_exception:  # noqa: B036
         caught_exception = this_exception
 
     # Assert
@@ -3889,11 +3898,15 @@ def test_application_file_scanner_is_valid_comma_separated_extension_list_with_b
     assert isinstance(caught_exception, argparse.ArgumentTypeError)
     assert str(caught_exception) == ("Extension '*.mj' must start with a period.")
 
+
+# pylint: enable=broad-exception-caught
+
+
+# pylint: disable=broad-exception-caught
 def test_application_file_scanner_is_valid_comma_separated_extension_list_and_disallow_empty_strings_empty() -> (
     None
 ):
-    """Test to verify that we can cleanly check for an empty comma-separated string.
-    """
+    """Test to verify that we can cleanly check for an empty comma-separated string."""
 
     # Arrange
     comma_separated_list = ""
@@ -3901,8 +3914,10 @@ def test_application_file_scanner_is_valid_comma_separated_extension_list_and_di
     # Act
     caught_exception = None
     try:
-        _ = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(comma_separated_list)
-    except BaseException as this_exception:
+        _ = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(
+            comma_separated_list
+        )
+    except BaseException as this_exception:  # noqa: B036
         caught_exception = this_exception
 
     # Assert
@@ -3910,41 +3925,51 @@ def test_application_file_scanner_is_valid_comma_separated_extension_list_and_di
     assert isinstance(caught_exception, argparse.ArgumentTypeError)
     assert str(caught_exception) == ("Alternate extensions cannot be an empty string.")
 
+
+# pylint: enable=broad-exception-caught
+
+
 def test_application_file_scanner_is_valid_comma_separated_extension_list_and_disallow_empty_strings_single() -> (
     None
 ):
-    """Test to verify that we can cleanly check for single element in a comma-separated string.
-    """
+    """Test to verify that we can cleanly check for single element in a comma-separated string."""
 
     # Arrange
     comma_separated_list = ".md"
 
     # Act
-    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(comma_separated_list)
+    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(
+        comma_separated_list
+    )
 
     # Assert
     assert result_string == comma_separated_list
 
+
 def test_application_file_scanner_is_valid_comma_separated_extension_list_and_disallow_empty_strings_double() -> (
     None
 ):
-    """Test to verify that we can cleanly check for double elements in a comma-separated string.
-    """
+    """Test to verify that we can cleanly check for double elements in a comma-separated string."""
 
     # Arrange
     comma_separated_list = ".md,.mj"
 
     # Act
-    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(comma_separated_list)
+    result_string = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(
+        comma_separated_list
+    )
 
     # Assert
     assert result_string == comma_separated_list
 
+
+# pylint: disable=broad-exception-caught
+
+
 def test_application_file_scanner_is_valid_comma_separated_extension_list_and_disallow_empty_strings_with_bad_extension() -> (
     None
 ):
-    """Test to verify that we can cleanly check for double elements in a comma-separated string.
-    """
+    """Test to verify that we can cleanly check for double elements in a comma-separated string."""
 
     # Arrange
     comma_separated_list = ".md,*.mj"
@@ -3952,11 +3977,16 @@ def test_application_file_scanner_is_valid_comma_separated_extension_list_and_di
     # Act
     caught_exception = None
     try:
-        _ = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(comma_separated_list)
-    except BaseException as this_exception:
+        _ = ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings(
+            comma_separated_list
+        )
+    except BaseException as this_exception:  # noqa: B036
         caught_exception = this_exception
 
     # Assert
     assert caught_exception is not None
     assert isinstance(caught_exception, argparse.ArgumentTypeError)
     assert str(caught_exception) == ("Extension '*.mj' must start with a period.")
+
+
+# pylint: enable=broad-exception-caught
