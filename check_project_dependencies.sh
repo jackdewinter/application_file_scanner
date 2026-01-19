@@ -46,7 +46,7 @@ cleanup_function() {
 	if [[ -n "${CODE_PAGE_NUM}" ]]; then
 		chcp.com "${CODE_PAGE_NUM}" >/dev/null 2>&1
 	fi
-	export PYTHONIOENCODING=
+	unset PYTHONIOENCODING
 
 	# If the temp file was used, get rid of it.
 	if [ -f "${TEMP_FILE}" ]; then
