@@ -135,14 +135,9 @@ class ApplicationFileScanner:
             )
         alternate_extensions = getattr(args, "alternate_extensions", None)
         if alternate_extensions is not None:
-            if alternate_extensions:
-                ApplicationFileScanner.is_valid_comma_separated_extension_list(
-                    alternate_extensions
-                )
-            else:
-                raise argparse.ArgumentTypeError(
-                    "If provided, alternate extensions cannot be an empty string."
-                )
+            ApplicationFileScanner.is_valid_comma_separated_extension_list(
+                alternate_extensions
+            )
 
         extension_to_use = alternate_extensions or default_extensions_to_look_for
 
