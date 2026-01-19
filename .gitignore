@@ -143,3 +143,4 @@ report.xml
 # For tests of application_file_scanner
 *.abc
 .git/
+test/resources/gitignore-test

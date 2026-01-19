@@ -22,6 +22,8 @@
     - Changed during debugging to make understand what is happening more evident.
 - [Add more logging to better understand what library is doing.](https://github.com/jackdewinter/application_file_scanner/issues/35)
     - Changed during debugging to make understand what is happening more evident.
+- [Take a look at py-walk to fix edge cases in gitignore-parser package.](https://github.com/jackdewinter/application_file_scanner/issues/44)
+    - Switched to `pywalk` package for exclude paths as it has better coverage.
 
 <!-- pyml disable-next-line no-duplicate-heading-->
 ### Fixed

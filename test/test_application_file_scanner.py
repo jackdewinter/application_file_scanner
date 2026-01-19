@@ -17,6 +17,7 @@ from test.util_helpers import UtilHelpers
 from test.utils import (
     create_temporary_configuration_file,
     read_contents_of_text_file,
+    temporary_change_to_directory,
     write_temporary_configuration,
 )
 from typing import List, Optional
@@ -3369,3 +3370,457 @@ def test_application_file_scanner_scan_with_gitignore_x() -> None:
     # Assert
     assert not any_errors
     assert sorted_files_to_parse == expected_files_to_ignore
+
+
+def test_application_file_scanner_with_args_no_default_extensions_no_alternate_extensions() -> (
+    None
+):
+    """Test to verify that supplying no default extensions and no alternate extensions will
+    result in all files in the specified directory being scanned.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "git-test")
+    extensions_to_scan = ""
+    expected_files_to_ignore: List[str] = [
+        f"{base_directory}{os.sep}test.md",
+        f"{base_directory}{os.sep}test.other",
+        f"{base_directory}{os.sep}test.txt",
+    ]
+
+    direct_args = [base_directory]
+
+    # Act
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    ApplicationFileScanner.add_default_command_line_arguments(
+        parser, extensions_to_scan, show_respect_gitignore=True
+    )
+    parse_arguments = parser.parse_args(args=direct_args)
+    sorted_files_to_parse, any_errors, _ = (
+        ApplicationFileScanner.determine_files_to_scan_with_args(parse_arguments)
+    )
+
+    # Assert
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files_to_ignore
+
+
+def test_application_file_scanner_with_args_good_default_extensions_no_alternate_extensions() -> (
+    None
+):
+    """Test to verify that supplying a single default extension and no alternate extensions will
+    result in only the files with the default extension in the specified directory being scanned.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "git-test")
+    extensions_to_scan = ".other"
+    expected_files_to_ignore: List[str] = [
+        f"{base_directory}{os.sep}test.other",
+    ]
+
+    direct_args = [base_directory]
+
+    # Act
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    ApplicationFileScanner.add_default_command_line_arguments(
+        parser, extensions_to_scan, show_respect_gitignore=True
+    )
+    parse_arguments = parser.parse_args(args=direct_args)
+    sorted_files_to_parse, any_errors, _ = (
+        ApplicationFileScanner.determine_files_to_scan_with_args(parse_arguments)
+    )
+
+    # Assert
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files_to_ignore
+
+
+def test_application_file_scanner_with_args_bad_default_extensions_no_alternate_extensions() -> (
+    None
+):
+    """Test to verify that the bad default extension stops parsing."""
+
+    # Arrange
+    extensions_to_scan = "*.md"
+
+    # Act
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    caught_exception = None
+    try:
+        ApplicationFileScanner.add_default_command_line_arguments(
+            parser, extensions_to_scan, show_respect_gitignore=True
+        )
+    except argparse.ArgumentTypeError as this_exception:
+        caught_exception = this_exception
+
+    # Assert
+    assert caught_exception is not None
+    assert str(caught_exception) == ("Extension '*.md' must start with a period.")
+
+
+def test_application_file_scanner_with_args_no_default_extensions_good_alternate_extensions() -> (
+    None
+):
+    """Test to verify that supplying no default extensions and a good alternate extensions will
+    result in only the files with the alternate extension in the specified directory being scanned.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "git-test")
+    extensions_to_scan = ""
+    expected_files_to_ignore: List[str] = [
+        f"{base_directory}{os.sep}test.md",
+    ]
+
+    direct_args = [base_directory, "-ae", ".md"]
+
+    # Act
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    ApplicationFileScanner.add_default_command_line_arguments(
+        parser, extensions_to_scan, show_respect_gitignore=True
+    )
+    parse_arguments = parser.parse_args(args=direct_args)
+    sorted_files_to_parse, any_errors, _ = (
+        ApplicationFileScanner.determine_files_to_scan_with_args(parse_arguments)
+    )
+
+    # Assert
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files_to_ignore
+
+
+def test_application_file_scanner_with_args_good_default_extensions_good_alternate_extensions() -> (
+    None
+):
+    """Test to verify that supplying a good default extensions and a good alternate extensions will
+    result in only the files with the alternate extension in the specified directory being scanned.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "git-test")
+    extensions_to_scan = ".other"
+    expected_files_to_ignore: List[str] = [
+        f"{base_directory}{os.sep}test.md",
+    ]
+
+    direct_args = [base_directory, "-ae", ".md"]
+
+    # Act
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    ApplicationFileScanner.add_default_command_line_arguments(
+        parser, extensions_to_scan, show_respect_gitignore=True
+    )
+    parse_arguments = parser.parse_args(args=direct_args)
+    sorted_files_to_parse, any_errors, _ = (
+        ApplicationFileScanner.determine_files_to_scan_with_args(parse_arguments)
+    )
+
+    # Assert
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files_to_ignore
+
+
+def test_application_file_scanner_with_args_good_default_extensions_bad_alternate_extensions() -> (
+    None
+):
+    """Test to verify that supplying a good default extensions and a bad alternate extensions will..."""
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "git-test")
+    extensions_to_scan = ".other"
+
+    direct_args = [base_directory, "-ae", "*.md"]
+
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    ApplicationFileScanner.add_default_command_line_arguments(
+        parser, extensions_to_scan, show_respect_gitignore=True
+    )
+
+    # Act
+    std_output = io.StringIO()
+    std_error = io.StringIO()
+    old_output = sys.stdout
+    old_error = sys.stderr
+    exit_exception = None
+    try:
+        sys.stdout = std_output
+        sys.stderr = std_error
+
+        _ = parser.parse_args(args=direct_args)
+    except SystemExit as this_exception:
+        exit_exception = this_exception
+    finally:
+        sys.stdout = old_output
+        sys.stderr = old_error
+
+    # Assert
+    assert exit_exception is not None
+    assert exit_exception.code == 2
+    assert std_output.getvalue() == ""
+    assert (
+        std_error.getvalue()
+        == """usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] [-e PATH_EXCLUSIONS]
+              [--respect-gitignore]
+              path [path ...]
+pytest: error: argument -ae/--alternate-extensions: Extension '*.md' must start with a period.
+"""
+    )
+
+
+def test_application_file_scanner_with_args_good_default_extensions_empty_alternate_extensions() -> (
+    None
+):
+    """Test to verify that supplying a good default extensions and an empty alternate extensions will..."""
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "git-test")
+    extensions_to_scan = ".other"
+
+    direct_args = [base_directory, "-ae", ""]
+
+    parser = argparse.ArgumentParser(description="Lint any found files.", prog="pytest")
+    ApplicationFileScanner.add_default_command_line_arguments(
+        parser, extensions_to_scan, show_respect_gitignore=True
+    )
+
+    # Act
+    std_output = io.StringIO()
+    std_error = io.StringIO()
+    old_output = sys.stdout
+    old_error = sys.stderr
+    exit_exception = None
+    try:
+        sys.stdout = std_output
+        sys.stderr = std_error
+
+        _ = parser.parse_args(args=direct_args)
+    except SystemExit as this_exception:
+        exit_exception = this_exception
+    finally:
+        sys.stdout = old_output
+        sys.stderr = old_error
+
+    # Assert
+    assert exit_exception is not None
+    assert exit_exception.code == 2
+    assert std_output.getvalue() == ""
+    assert (
+        std_error.getvalue()
+        == """usage: pytest [-h] [-l] [-r] [-ae ALTERNATE_EXTENSIONS] [-e PATH_EXCLUSIONS]
+              [--respect-gitignore]
+              path [path ...]
+pytest: error: argument -ae/--alternate-extensions: Alternate extensions cannot be an empty string.
+"""
+    )
+
+
+def test_application_file_scanner_scan_with_non_root_exclude_with_include_nosep_exclude_nosep() -> (
+    None
+):
+    """Test to verify that we can include a non-root directory without a trailing separator
+    and exclude the same non-root directory without a trailing separator.
+    """
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources")
+    expected_files: List[str] = []
+
+    # Act
+    with temporary_change_to_directory(base_directory):
+        sorted_files_to_parse, any_errors, _ = (
+            ApplicationFileScanner.determine_files_to_scan(
+                ["git-test"],
+                ["git-test"],
+                recurse_directories=False,
+                eligible_extensions="",
+                only_list_files=False,
+            )
+        )
+
+    # Assert
+    print(sorted_files_to_parse)
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files
+
+
+def test_application_file_scanner_scan_with_non_root_exclude_with_include_sep_exclude_nosep() -> (
+    None
+):
+    """Test to verify that we can include a non-root directory with a trailing separator
+    and exclude the same non-root directory without a trailing separator.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources")
+    expected_files: List[str] = []
+
+    # Act
+    with temporary_change_to_directory(base_directory):
+        sorted_files_to_parse, any_errors, _ = (
+            ApplicationFileScanner.determine_files_to_scan(
+                ["git-test/"],
+                ["git-test"],
+                recurse_directories=False,
+                eligible_extensions="",
+                only_list_files=False,
+            )
+        )
+
+    # Assert
+    print(sorted_files_to_parse)
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files
+
+
+def test_application_file_scanner_scan_with_non_root_exclude_with_include_nosep_exclude_sep() -> (
+    None
+):
+    """Test to verify that we can include a non-root directory without a trailing separator
+    and exclude the same non-root directory with a trailing separator.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources")
+    expected_files: List[str] = []
+
+    # Act
+    with temporary_change_to_directory(base_directory):
+        sorted_files_to_parse, any_errors, _ = (
+            ApplicationFileScanner.determine_files_to_scan(
+                ["git-test"],
+                ["git-test/"],
+                recurse_directories=False,
+                eligible_extensions="",
+                only_list_files=False,
+            )
+        )
+
+    # Assert
+    print(sorted_files_to_parse)
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files
+
+
+def test_application_file_scanner_scan_with_non_root_exclude_with_include_sep_exclude_sep() -> (
+    None
+):
+    """Test to verify that we can include a non-root directory with a trailing separator
+    and exclude the same non-root directory with a trailing separator.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources")
+    expected_files: List[str] = []
+
+    # Act
+    with temporary_change_to_directory(base_directory):
+        sorted_files_to_parse, any_errors, _ = (
+            ApplicationFileScanner.determine_files_to_scan(
+                ["git-test/"],
+                ["git-test/"],
+                recurse_directories=False,
+                eligible_extensions="",
+                only_list_files=False,
+            )
+        )
+
+    # Assert
+    print(sorted_files_to_parse)
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files
+
+
+def test_application_file_scanner_scan_with_non_root_gitignored_directory_with_checks_disabled() -> (
+    None
+):
+    """Test to verify that we can create a gitignored directory and scan it without
+    any negative effects with gitignore checks disabled.
+
+    Note: we need to create the directory temporarily as it is gitignored.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "gitignore-test")
+
+    paths_to_scan = ["."]
+    paths_to_ignore: List[str] = []
+    scanner_options = ApplicationFileScannerOptions(
+        enable_path_gitignore_exclusions=False,
+        enable_directory_gitignore_exclusions=False,
+    )
+
+    expected_files: List[str] = [f"{base_directory}{os.sep}test.me"]
+
+    test_file_name = "test.me"
+
+    # Act
+    try:
+        os.makedirs(base_directory, exist_ok=True)
+        with create_temporary_configuration_file(
+            "", file_name=test_file_name, directory=base_directory
+        ):
+            with temporary_change_to_directory(base_directory):
+                sorted_files_to_parse, any_errors, _ = (
+                    ApplicationFileScanner.determine_files_to_scan(
+                        paths_to_scan,
+                        paths_to_ignore,
+                        recurse_directories=False,
+                        eligible_extensions="",
+                        only_list_files=False,
+                        scanner_options=scanner_options,
+                    )
+                )
+    finally:
+        os.rmdir(base_directory)
+
+    # Assert
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files
+
+
+def test_application_file_scanner_scan_with_non_root_gitignored_directory_with_checks_enabled() -> (
+    None
+):
+    """Test to verify that we can create a gitignored directory and scan it without
+    any negative effects with gitignore checks enabled.
+
+    Note: we need to create the directory temporarily as it is gitignored.
+    """
+
+    # Arrange
+    base_directory = os.path.join(os.getcwd(), "test", "resources", "gitignore-test")
+
+    paths_to_scan = ["."]
+    paths_to_ignore: List[str] = []
+    scanner_options = ApplicationFileScannerOptions(
+        enable_path_gitignore_exclusions=True,
+        enable_directory_gitignore_exclusions=True,
+    )
+
+    expected_files: List[str] = []
+
+    test_file_name = "test.me"
+
+    # Act
+    try:
+        os.makedirs(base_directory, exist_ok=True)
+        with create_temporary_configuration_file(
+            "", file_name=test_file_name, directory=base_directory
+        ):
+            with temporary_change_to_directory(base_directory):
+                sorted_files_to_parse, any_errors, _ = (
+                    ApplicationFileScanner.determine_files_to_scan(
+                        paths_to_scan,
+                        paths_to_ignore,
+                        recurse_directories=False,
+                        eligible_extensions="",
+                        only_list_files=False,
+                        scanner_options=scanner_options,
+                    )
+                )
+    finally:
+        os.rmdir(base_directory)
+
+    # Assert
+    assert not any_errors
+    assert sorted_files_to_parse == expected_files
