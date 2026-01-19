@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass
 from typing import List, Optional, Set, Tuple
 
-from gitignore_parser import parse_gitignore_str
+from py_walk import get_parser_from_list
 from typing_extensions import Protocol
 
 from application_file_scanner.git_processor import GitProcessor
@@ -133,9 +133,13 @@ class ApplicationFileScanner:
             ApplicationFileScanner.is_valid_comma_separated_extension_list(
                 default_extensions_to_look_for
             )
-        extension_to_use = (
-            getattr(args, "alternate_extensions", "") or default_extensions_to_look_for
-        )
+        alternate_extensions = getattr(args, "alternate_extensions", None)
+        if alternate_extensions is not None:
+            ApplicationFileScanner.is_valid_comma_separated_extension_list(
+                alternate_extensions
+            )
+
+        extension_to_use = alternate_extensions or default_extensions_to_look_for
 
         # The command line argument being set to a non-default overrides the scanner options.
         if getattr(args, "respect_gitignore", False) and scanner_options:
@@ -599,7 +603,7 @@ class ApplicationFileScanner:
         show_alternate_extensions: bool = True,
         show_exclusions: bool = True,
         show_respect_gitignore: bool = False,
-    ) -> None:
+    ) -> None:  # sourcery skip: use-assigned-variable
         """
         Add a set of default command line arguments to an argparse styled command line.
 
@@ -621,10 +625,13 @@ class ApplicationFileScanner:
         :type show_respect_gitignore: bool
         """
 
+        default_alterate_extension: Optional[str] = default_extensions_to_look_for
         if default_extensions_to_look_for:
             ApplicationFileScanner.is_valid_comma_separated_extension_list(
                 default_extensions_to_look_for
             )
+        else:
+            default_alterate_extension = None
 
         specific_file_type_name = ""
         if file_type_name is not None:
@@ -657,8 +664,8 @@ class ApplicationFileScanner:
                 "--alternate-extensions",
                 dest="alternate_extensions",
                 action="store",
-                default=default_extensions_to_look_for,
-                type=ApplicationFileScanner.is_valid_comma_separated_extension_list,
+                default=default_alterate_extension,
+                type=ApplicationFileScanner.is_valid_comma_separated_extension_list_and_disallow_empty_strings,
                 help="provide an alternate set of file extensions to match against",
             )
 
@@ -711,6 +718,26 @@ class ApplicationFileScanner:
             if (clean_split := possible_extension[1:])
             else f"Extension '{possible_extension}' must have at least one character after the period."
         )
+
+    @staticmethod
+    def is_valid_comma_separated_extension_list_and_disallow_empty_strings(
+        argument: str,
+    ) -> str:
+        """
+        Validate a comma-separated list of file extensions for use with argparse.  Similar to
+        is_valid_comma_separated_extension_list, but disallows an empty string.
+
+        :param argument: Comma-separated string of file extensions to validate (e.g. '.txt,.log').
+        :type argument: str
+        :raises argparse.ArgumentTypeError: If any extension in the list is invalid.
+        :returns: The validated, lowercased string of extensions.
+        :rtype: str
+        """
+        if not argument:
+            raise argparse.ArgumentTypeError(
+                "Alternate extensions cannot be an empty string."
+            )
+        return ApplicationFileScanner.is_valid_comma_separated_extension_list(argument)
 
     @staticmethod
     def is_valid_comma_separated_extension_list(argument: str) -> str:
@@ -866,13 +893,10 @@ class ApplicationFileScanner:
             if os.altsep is not None
             else exclude_paths[:]
         )
-        modified_exclude_paths_as_gitignore_string = "\n".join(modified_exclude_paths)
 
         # Create the matcher and use it to determine what files should remain in the new list.
-        exclusion_matcher = parse_gitignore_str(
-            modified_exclude_paths_as_gitignore_string, os.getcwd()
-        )
-        return [i for i in files_to_parse if not exclusion_matcher(i)]
+        parser = get_parser_from_list(modified_exclude_paths, base_dir=os.getcwd())
+        return [i for i in files_to_parse if not parser.match(i)]
 
     @staticmethod
     def __remove_any_gitignored_paths_batch(

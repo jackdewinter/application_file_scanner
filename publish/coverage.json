@@ -2,12 +2,12 @@
     "projectName": "application_file_scanner",
     "reportSource": "Unknown",
     "branchLevel": {
-        "totalMeasured": 110,
-        "totalCovered": 110
+        "totalMeasured": 114,
+        "totalCovered": 114
     },
     "lineLevel": {
-        "totalMeasured": 375,
-        "totalCovered": 375
+        "totalMeasured": 384,
+        "totalCovered": 384
     }
 }
 
