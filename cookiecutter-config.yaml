@@ -2,7 +2,7 @@ default_context:
     project_name: "application_file_scanner"
     project_version: "0.6.4"
     project_src_additional_path: ", stubs"
-    project_src_dependencies: "gitignore_parser, pytest"
+    project_src_dependencies: "gitignore_parser"
     pypi_package_name: "application_file_scanner"
     github_organization: "jackdewinter"
     github_project_name: "application_file_scanner"
