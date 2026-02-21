@@ -21,6 +21,7 @@ verbose_echo() {
 
 # Perform any cleanup required by the script.
 # shellcheck disable=SC2317  # Unreachable code
+# shellcheck disable=SC2329  # This function is never invoked. Check usage (or ignored if invoked indirectly).
 cleanup_function() {
 
 	if [[ ${VERBOSE_MODE} -ne 0 ]]; then
@@ -95,7 +96,6 @@ parse_command_line() {
 	DEBUG_MODE=0
 	FORCE_RESET_MODE=0
 	RESET_PYTHON_VERSION=
-	PARAMS=()
 	while (("$#")); do
 		case "$1" in
 		-f | --force-reset)
@@ -136,7 +136,7 @@ parse_command_line() {
 
 remove_virtual_environment() {
 
-    RESET_PIPFILE=0
+	RESET_PIPFILE=0
 	verbose_echo "{Forcing a hard reset of the virtual environment.}"
 	if ! VENV_DIR=$(pipenv --venv); then
 		verbose_echo "{Virtual environment was not established.  Reset not required. Proceeding to setup virtual environment.}"
@@ -176,7 +176,7 @@ remove_virtual_environment() {
 		fi
 	fi
 
-    mkdir -p .venv
+	mkdir -p .venv
 
 	if [[ -z ${RESET_PYTHON_VERSION} ]]; then
 		RESET_PYTHON_VERSION=$(python utils/extract_python_version_from_pipfile.py)
@@ -185,37 +185,37 @@ remove_virtual_environment() {
 
 check_for_unsychronized_virtual_environment() {
 
-    RESET_PIPFILE=0
+	RESET_PIPFILE=0
 
-    # To allow for the possibility of the virtual environment being moved, 
-    # check the provenance of the virtual environment against the current provenance.
-    # If they do not match, then we will reset the virtual environment to be safe.
-    CURRENT_PROVENANCE="$(pwd)"
-    VENV_PROVENANCE=""
-    if [[ -f $PROVENENCE_PATH ]]; then
-        VENV_PROVENANCE=$(<$PROVENENCE_PATH)
-    fi
-    if [[ "${VENV_PROVENANCE}" != "${CURRENT_PROVENANCE}" ]]; then
+	# To allow for the possibility of the virtual environment being moved,
+	# check the provenance of the virtual environment against the current provenance.
+	# If they do not match, then we will reset the virtual environment to be safe.
+	CURRENT_PROVENANCE="$(pwd)"
+	VENV_PROVENANCE=""
+	if [[ -f ${PROVENENCE_PATH} ]]; then
+		VENV_PROVENANCE=$(<"${PROVENENCE_PATH}")
+	fi
+	if [[ "${VENV_PROVENANCE}" != "${CURRENT_PROVENANCE}" ]]; then
 		verbose_echo "{Location of virtual environment changed.}"
-        RESET_PIPFILE=1
-    fi
+		RESET_PIPFILE=1
+	fi
 
-    # Check to see if the Pipfile and Pipfile.lock files are in sync with each other.
-    # If not, we will reset the virtual environment to be safe.
-    if [[ $RESET_PIPFILE -eq 0 ]]; then
-        python utils/find_outdated_piplock_file.py >"${TEMP_FILE}" 2>&1
-        OUTDATED_PIPLOCK_RETCODE=$?
-        if [[ ${OUTDATED_PIPLOCK_RETCODE} -eq 2 ]]; then
-            cat "${TEMP_FILE}"
-            complete_process 1 "{Analysis of project cannot proceed without a Pipfile.}"
-        fi
-        if [[ ${OUTDATED_PIPLOCK_RETCODE} -ne 0 ]]; then
-            verbose_echo "{Virtual environment files 'Pipfile' and 'Pipfile.lock' are not in sync with each other.}"
-            RESET_PIPFILE=1
-        fi
-    fi
+	# Check to see if the Pipfile and Pipfile.lock files are in sync with each other.
+	# If not, we will reset the virtual environment to be safe.
+	if [[ ${RESET_PIPFILE} -eq 0 ]]; then
+		python utils/find_outdated_piplock_file.py >"${TEMP_FILE}" 2>&1
+		OUTDATED_PIPLOCK_RETCODE=$?
+		if [[ ${OUTDATED_PIPLOCK_RETCODE} -eq 2 ]]; then
+			cat "${TEMP_FILE}"
+			complete_process 1 "{Analysis of project cannot proceed without a Pipfile.}"
+		fi
+		if [[ ${OUTDATED_PIPLOCK_RETCODE} -ne 0 ]]; then
+			verbose_echo "{Virtual environment files 'Pipfile' and 'Pipfile.lock' are not in sync with each other.}"
+			RESET_PIPFILE=1
+		fi
+	fi
 
-    if [[ ${RESET_PIPFILE} -ne 0 ]]; then
+	if [[ ${RESET_PIPFILE} -ne 0 ]]; then
 		RESET_PYTHON_VERSION=$(pipenv run python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 	fi
 }
@@ -233,7 +233,7 @@ synchronize_virtual_environment() {
 		complete_process 1 "{Updating with new Pipfile.lock file failed.}"
 	fi
 
-    echo "$(pwd)" >"${PROVENENCE_PATH}"
+	pwd >"${PROVENENCE_PATH}"
 
 	verbose_echo "{Python packages in virtual environment synced.}"
 }
